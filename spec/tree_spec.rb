@@ -70,7 +70,7 @@ describe Tree do
   end
   
   context "creating trees" do
-    before(:all) do
+    before(:each) do
       @temp_repo_path = create_temp_repo(TEST_REPO_PATH)
       @repo = Repo.new(@temp_repo_path)
     end
@@ -80,6 +80,10 @@ describe Tree do
       it "creates a new tree from a hashmap" do
         @tree = Tree.new_from_hashmap(@repo, {"bla" => "bla", "tree" => {"blabla" => "blabla"}})
         expect(@repo.find(@tree.id, :tree)).to be_kind_of Tree
+        
+        commit = RJGit::Commit.new_with_tree(@repo, @tree, "Committing new tree", RJGit::Actor.new('rspec', 'rspec@rjgit.com'))
+        @repo.update_ref(commit)
+        
         expect(@tree.trees.find {|x| x.name == "tree"}).to be_kind_of Tree
         expect(@tree.blobs.first.name).to eq "bla"
       end
@@ -87,13 +91,15 @@ describe Tree do
       it "creates a new tree from a hashmap, based on an old tree" do
         second_tree = Tree.new_from_hashmap(@repo, {"newblob" => "data"}, @repo.head.tree)
         expect(@repo.find(second_tree.id, :tree)).to be_kind_of Tree
+        commit = RJGit::Commit.new_with_tree(@repo, second_tree, "Committing new tree", RJGit::Actor.new('rspec', 'rspec@rjgit.com'))
+        @repo.update_ref(commit)
         expect(second_tree.blobs.length).to eq 6
         expect(second_tree.blobs.find {|x| x.name == "newblob"}).to be_kind_of Blob
       end
     
     end
     
-    after(:all) do
+    after(:each) do
       remove_temp_repo(@temp_repo_path)
     end
   end
