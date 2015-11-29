@@ -28,7 +28,7 @@ module RJGit
     def contents_array
       return @contents_ary if @contents_ary
       results = []
-      RJGit::Porcelain.ls_tree(@jrepo, @path, Constants::HEAD).each do |item|
+      RJGit::Porcelain.ls_tree(@jrepo, nil, @id).each do |item|
         walk = RevWalk.new(@jrepo)
         results << Tree.new(@jrepo, item[:mode], item[:path], walk.lookup_tree(ObjectId.from_string(item[:id]))) if item[:type] == 'tree'
         results << Blob.new(@jrepo, item[:mode], item[:path], walk.lookup_blob(ObjectId.from_string(item[:id]))) if item[:type] == 'blob'

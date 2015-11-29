@@ -71,11 +71,16 @@ module RJGit
       obj = jrepo.resolve(ref)
       walk = RevWalk.new(jrepo)
       begin
-        jcommit = walk.parse_commit(obj)
+        revobj = walk.parse_any(obj)
+        jtree = case revobj.get_type
+        when Constants::OBJ_TREE
+          walk.parse_tree(obj)
+        when Constants::OBJ_COMMIT
+          walk.parse_commit(obj).get_tree
+        end
       rescue Java::OrgEclipseJgitErrors::MissingObjectException, Java::JavaLang::IllegalArgumentException, Java::JavaLang::NullPointerException
         return nil
       end
-      jtree = jcommit.get_tree
       if path
         treewalk = TreeWalk.forPath(jrepo, path, jtree)
         treewalk.enter_subtree
