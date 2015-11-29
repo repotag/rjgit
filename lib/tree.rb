@@ -60,10 +60,8 @@ module RJGit
     def self.new_from_hashmap(repository, hashmap, base_tree = nil)
       jrepo = RJGit.repository_type(repository)
       tree_builder = Plumbing::TreeBuilder.new(jrepo)
-      $stderr.puts "we have a tree_builder: #{tree_builder.inspect}"
       base_tree = RJGit.tree_type(base_tree)
       new_tree = tree_builder.build_tree(base_tree, hashmap, true)
-      $stderr.puts "we have a new tree as well: #{new_tree.inspect}"
       walk = RevWalk.new(jrepo)
       new_tree = walk.lookup_tree(new_tree)
       Tree.new(jrepo, TREE_TYPE, nil, new_tree)
