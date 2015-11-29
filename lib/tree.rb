@@ -5,7 +5,7 @@ module RJGit
   
   class Tree 
 
-    attr_reader :contents, :id, :mode, :name, :repo, :jtree
+    attr_reader :contents, :id, :mode, :name, :repo, :path, :jtree
     RJGit.delegate_to(RevTree, :@jtree)
     include Enumerable
     
@@ -21,14 +21,14 @@ module RJGit
     def data
       return @contents if @contents
       strio = StringIO.new
-      RJGit::Porcelain.ls_tree(@jrepo, @jtree, options={:print => true, :io => strio})
+      RJGit::Porcelain.ls_tree(@jrepo, @path, Constants::HEAD, options={:print => true, :io => strio})
       @contents = strio.string
     end
     
     def contents_array
       return @contents_ary if @contents_ary
       results = []
-      RJGit::Porcelain.ls_tree(@jrepo, @jtree).each do |item|
+      RJGit::Porcelain.ls_tree(@jrepo, @path, Constants::HEAD).each do |item|
         walk = RevWalk.new(@jrepo)
         results << Tree.new(@jrepo, item[:mode], item[:path], walk.lookup_tree(ObjectId.from_string(item[:id]))) if item[:type] == 'tree'
         results << Blob.new(@jrepo, item[:mode], item[:path], walk.lookup_blob(ObjectId.from_string(item[:id]))) if item[:type] == 'blob'
@@ -60,8 +60,10 @@ module RJGit
     def self.new_from_hashmap(repository, hashmap, base_tree = nil)
       jrepo = RJGit.repository_type(repository)
       tree_builder = Plumbing::TreeBuilder.new(jrepo)
+      $stderr.puts "we have a tree_builder: #{tree_builder.inspect}"
       base_tree = RJGit.tree_type(base_tree)
       new_tree = tree_builder.build_tree(base_tree, hashmap, true)
+      $stderr.puts "we have a new tree as well: #{new_tree.inspect}"
       walk = RevWalk.new(jrepo)
       new_tree = walk.lookup_tree(new_tree)
       Tree.new(jrepo, TREE_TYPE, nil, new_tree)
