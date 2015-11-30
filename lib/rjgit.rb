@@ -66,7 +66,7 @@ module RJGit
     end
     
     def self.ls_tree(repository, path=nil, ref=Constants::HEAD, options={})
-      options = {recursive: false, print: false, io: $stdout, path_filter: nil, ref: Constants::HEAD}.merge options
+      options = {recursive: false, print: false, io: $stdout, path_filter: nil}.merge options
       jrepo = RJGit.repository_type(repository)
       obj = jrepo.resolve(ref)
       walk = RevWalk.new(jrepo)
