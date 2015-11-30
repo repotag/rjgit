@@ -6,6 +6,7 @@ module RJGit
   class Tree 
 
     attr_reader :contents, :id, :mode, :name, :repo, :path, :jtree
+    alias_method :get_name, :id
     RJGit.delegate_to(RevTree, :@jtree)
     include Enumerable
     

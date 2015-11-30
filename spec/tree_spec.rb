@@ -44,6 +44,7 @@ describe Tree do
 
     it "has an id" do
       expect(@tree.id).to match /aa74200714ce8190b38211795f974b4410f5a9d0/
+      expect(@tree.get_name).to match /aa74200714ce8190b38211795f974b4410f5a9d0/
     end
 
     it "has a mode" do

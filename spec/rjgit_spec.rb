@@ -99,6 +99,10 @@ describe RJGit do
           listing = RJGit::Porcelain.ls_tree(@bare_repo.jrepo, 'lib/grit', tree, {recursive: false})
           first_entry = listing.first
           expect(first_entry[:path]).to eq 'lib/grit/actor.rb'
+          jtree = @bare_repo.head.tree.jtree
+          listing = RJGit::Porcelain.ls_tree(@bare_repo.jrepo, 'lib/grit', tree, {recursive: false})
+          first_entry = listing.first
+          expect(first_entry[:path]).to eq 'lib/grit/actor.rb'
         end
 
         it "mimics git-ls-tree for a specific path" do
