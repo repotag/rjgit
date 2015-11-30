@@ -65,12 +65,14 @@ module RJGit
       return bytes.to_a.pack('c*').force_encoding('UTF-8')
     end
     
-    def self.ls_tree(repository, path=nil, ref=Constants::HEAD, options={})
+    def self.ls_tree(repository, path=nil, treeish=Constants::HEAD, options={})
       options = {recursive: false, print: false, io: $stdout, path_filter: nil}.merge options
       jrepo = RJGit.repository_type(repository)
-      obj = jrepo.resolve(ref)
-      walk = RevWalk.new(jrepo)
+      ref = treeish.respond_to?(:id) ? treeish.id : treeish
+
       begin
+        obj = jrepo.resolve(ref)
+        walk = RevWalk.new(jrepo)
         revobj = walk.parse_any(obj)
         jtree = case revobj.get_type
         when Constants::OBJ_TREE
@@ -83,6 +85,7 @@ module RJGit
       end
       if path
         treewalk = TreeWalk.forPath(jrepo, path, jtree)
+        return nil unless treewalk
         treewalk.enter_subtree
       else
         treewalk = TreeWalk.new(jrepo)
