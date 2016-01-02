@@ -18,6 +18,8 @@ module RJGit
     attr_reader :jcommit
     attr_reader :parent_count
   
+    alias_method :get_name, :id
+    
     RJGit.delegate_to(RevCommit, :@jcommit)
     
     def initialize(repository, commit)
