@@ -13,6 +13,7 @@ module RJGit
   
   def self.delegate_to(klass, delegate_name)
     java_methods = klass.java_class.declared_instance_methods.map{ |method| method.name.to_sym }
+    java_methods.reject! { |j| j.to_s.start_with?("lambda$") }
     def_delegators delegate_name, *java_methods
   end
 
