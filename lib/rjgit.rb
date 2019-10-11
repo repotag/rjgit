@@ -341,7 +341,6 @@ module RJGit
         ru.setRefLogMessage("commit: #{message}", false)
         res = ru.update.to_string
         
-        # @treebuilder.object_inserter.release
         @current_tree = new_tree
         log = @treebuilder.log
         @treebuilder.init_log
@@ -368,17 +367,22 @@ module RJGit
 
       def initialize(repository, patch, ref = Constants::HEAD)
         super(repository)
+        @ref   = ref
         @patch = Patch.new
         @patch.parse(ByteArrayInputStream.new(patch.to_java_bytes))
         raise 'Error parsing patch' unless @patch.getErrors.empty?
         @current_tree = Commit.find_head(@jrepo, ref).tree
       end
 
+      def commit(message, author, parents = nil, force = false)
+        super(message, author, parents, @ref, force)
+      end
+
       def build_map
         @patch.getFiles.each do |file_header|
           case file_header.getChangeType
           when ADD
-            puts "ADDITION: #{file_header.getNewPath}"
+            add(file_header.getNewPath, apply('', file_header))
           when MODIFY
             add(file_header.getOldPath, apply(getData(file_header.getOldPath), file_header))
           when DELETE
