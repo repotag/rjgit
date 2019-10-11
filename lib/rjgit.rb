@@ -27,7 +27,8 @@ module RJGit
   import 'org.eclipse.jgit.lib.ObjectId'
    
   module Porcelain
-   
+
+    import 'org.eclipse.jgit.lib.Constants'
     import 'org.eclipse.jgit.api.AddCommand'
     import 'org.eclipse.jgit.api.CommitCommand'
     import 'org.eclipse.jgit.api.BlameCommand'
@@ -35,7 +36,6 @@ module RJGit
     import 'org.eclipse.jgit.blame.BlameResult'
     import 'org.eclipse.jgit.treewalk.CanonicalTreeParser'
     import 'org.eclipse.jgit.diff.DiffFormatter'
-
     
     # http://wiki.eclipse.org/JGit/User_Guide#Porcelain_API
     def self.add(repository, file_pattern)
@@ -178,7 +178,7 @@ module RJGit
     class TreeBuilder
       import org.eclipse.jgit.lib.FileMode
       import org.eclipse.jgit.lib.TreeFormatter
-      
+      import org.eclipse.jgit.patch.Patch
     
       attr_accessor :treemap
       attr_reader :log
@@ -324,9 +324,8 @@ module RJGit
         result
       end
       
-      def commit(message, author, parents = nil, ref = nil, force = false)
-        ref = ref ? ref : "refs/heads/#{Constants::MASTER}"
-        @current_tree = @current_tree ? RJGit.tree_type(@current_tree) : @jrepo.resolve("refs/heads/#{Constants::MASTER}^{tree}")
+      def commit(message, author, parents = nil, ref = "refs/heads/#{Constants::MASTER}", force = false)
+        @current_tree = @current_tree ? RJGit.tree_type(@current_tree) : @jrepo.resolve("#{ref}^{tree}")
         @treebuilder.treemap = @treemap
         new_tree = @treebuilder.build_tree(@current_tree)
         return false if @current_tree && new_tree.name == @current_tree.name
@@ -354,6 +353,81 @@ module RJGit
         ["NEW", "FAST_FORWARD", "FORCED"].include?(result)
       end
       
+    end
+
+    class ApplyPatchToIndex < RJGit::Plumbing::Index
+
+      import org.eclipse.jgit.patch.Patch
+      import org.eclipse.jgit.diff.DiffEntry
+
+      ADD    = org.eclipse.jgit.diff.DiffEntry::ChangeType::ADD
+      COPY   = org.eclipse.jgit.diff.DiffEntry::ChangeType::COPY
+      MODIFY = org.eclipse.jgit.diff.DiffEntry::ChangeType::MODIFY
+      DELETE = org.eclipse.jgit.diff.DiffEntry::ChangeType::DELETE
+      RENAME = org.eclipse.jgit.diff.DiffEntry::ChangeType::RENAME
+
+      def initialize(repository, patch, ref = Constants::HEAD)
+        super(repository)
+        @patch = Patch.new
+        @patch.parse(ByteArrayInputStream.new(patch.to_java_bytes))
+        raise 'Error parsing patch' unless @patch.getErrors.empty?
+        @current_tree = Commit.find_head(@jrepo, ref).tree
+      end
+
+      def build_map
+        @patch.getFiles.each do |file_header|
+          case file_header.getChangeType
+          when ADD
+            puts "ADDITION: #{file_header.getNewPath}"
+          when MODIFY
+            add(file_header.getOldPath, apply(getData(file_header.getOldPath), file_header))
+          when DELETE
+            delete(file_header.getOldPath)
+          when RENAME
+            delete(file_header.getOldPath)
+            add(file_header.getNewPath, getData(file_header.getOldPath))
+          when COPY
+            add(file_header.getNewPath, getData(file_header.getOldPath))
+          end
+        end
+      end
+
+      private
+
+      def getData(path)
+        (@current_tree / path).data
+      end
+
+      def hunk_sanity_check(hunk, hunk_line, pos, newLines)
+        raise 'Could not build treemap: the patch failed to apply' unless newLines[hunk.getNewStartLine - 1 + pos] == hunk_line[1..-1]
+      end
+
+      def apply(original, file_header)
+        newLines = original.lines
+        file_header.getHunks.each do |hunk|
+          length = hunk.getEndOffset - hunk.getStartOffset
+          buffer_text = hunk.getBuffer.to_s.slice(hunk.getStartOffset, length)
+          pos = 0
+          buffer_text.each_line do |hunk_line|
+            case hunk_line[0]
+              when ' '
+                hunk_sanity_check(hunk, hunk_line, pos, newLines)
+                pos += 1
+              when '-'
+                if hunk.getNewStartLine == 0
+                  newLines = []
+                else
+                  hunk_sanity_check(hunk, hunk_line, pos, newLines)
+                  newLines.slice!(hunk.getNewStartLine - 1 + pos)
+                end
+              when '+'
+                newLines.insert(hunk.getNewStartLine - 1 + pos, hunk_line[1..-1])
+                pos += 1
+            end
+          end
+        end
+        newLines.join
+      end
     end
     
   end
