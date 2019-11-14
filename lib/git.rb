@@ -15,6 +15,8 @@ module RJGit
   import 'org.eclipse.jgit.api.TransportConfigCallback'
   import 'org.eclipse.jgit.transport.JschConfigSessionFactory'
   import 'org.eclipse.jgit.transport.SshTransport'
+  import 'org.eclipse.jgit.revwalk.FollowFilter'
+  import 'org.eclipse.jgit.revwalk.TreeRevFilter'
 
   class RubyGit
 
@@ -47,67 +49,55 @@ module RJGit
       return [] unless ref
       jcommits = Array.new
 
+      logs = @jgit.log
+      logs.add(ref)
+
       if path && options[:follow]
-        current_path = path
-        start = nil
-        loop do
-          logs = @jgit.log.add(ref).addPath(current_path).call
-          logs.each do |jcommit|
-            next if jcommits.include?(jcommit)
-            jcommits << jcommit
-            start = jcommit
-          end
-          current_path = follow_renames(start, current_path) if start
-          break if current_path.nil?
-        end
-
-      else
-        logs = @jgit.log
-        logs.add(ref)
-        logs.addPath(path) if path
-        logs.setMaxCount(options[:max_count]) if options[:max_count]
-        logs.setSkip(options[:skip]) if options[:skip]
-
-        if (options[:since] && options[:until])
-          revwalk = RevWalk.new(jrepo)
-          since_commit = revwalk.parseCommit(jrepo.resolve(options[:since]))
-          until_commit = revwalk.parseCommit(jrepo.resolve(options[:until]))
-          logs.addRange(since_commit, until_commit)
-        end
-        if options[:not]
-          revwalk = RevWalk.new(jrepo)
-          options[:not].each do |ref|
-            logs.not(revwalk.parseCommit(jrepo.resolve(ref)))
-          end
-        end
-        jcommits = logs.call
+        pathnames = {ref.get_name => path} if options[:list_renames]
+        cfg       = Configuration.new(nil)
+        cfg.add_setting('renames', true, 'diffs', nil)
+        follow    = FollowFilter.create(path, cfg.get(org.eclipse.jgit.diff.DiffConfig::KEY))
+        logs.set_rev_filter(TreeRevFilter.new(RevWalk.new(jrepo), follow))
+      elsif path
+        logs.addPath(path)
       end
 
-      jcommits.map{ |jcommit| Commit.new(jrepo, jcommit) }
-    end
+      logs.setMaxCount(options[:max_count]) if options[:max_count]
+      logs.setSkip(options[:skip]) if options[:skip]
 
-    def follow_renames(jcommit, path)
-      commits = @jgit.log.add(jcommit).call
-      commits.each do |jcommit_prev|
-        tree_start = jcommit.getTree
-        tree_prev  = jcommit_prev.getTree
-        treewalk = TreeWalk.new(jrepo)
-        #treewalk.setFilter(PathFilter.create(File.dirname(path)))
-        treewalk.addTree(tree_prev)
-        treewalk.addTree(tree_start)
-        treewalk.setRecursive(true)
-        rename_detector = RenameDetector.new(jrepo)
-        rename_detector.addAll(DiffEntry.scan(treewalk))
-        diff_entries = rename_detector.compute
-        diff_entries.each do |entry|
-          if ((entry.getChangeType == DiffEntry::ChangeType::RENAME || entry.getChangeType == DiffEntry::ChangeType::COPY) && entry.getNewPath.match(path))
-            return entry.getOldPath
+      if (options[:since] && options[:until])
+        revwalk = RevWalk.new(jrepo)
+        since_commit = revwalk.parseCommit(jrepo.resolve(options[:since]))
+        until_commit = revwalk.parseCommit(jrepo.resolve(options[:until]))
+        logs.addRange(since_commit, until_commit)
+      end
+
+      if options[:not]
+        revwalk = RevWalk.new(jrepo)
+        options[:not].each do |ref|
+          logs.not(revwalk.parseCommit(jrepo.resolve(ref)))
+        end
+      end
+      commits = logs.call.map{ |jcommit| Commit.new(jrepo, jcommit) }
+
+      if path && options[:follow] && options[:list_renames]
+        df = DiffFormatter.new(DisabledOutputStream::INSTANCE)
+        df.set_repository(jrepo)
+        df.set_context(0)
+        df.set_path_filter(follow)
+        df.set_detect_renames(true)
+        commits.each do |commit|
+          jcommit = commit.jcommit
+          parent  = jcommit.parent_count > 0 ? jcommit.get_parent(0) : nil
+          entries = df.scan(parent, jcommit).to_a
+          unless entries.empty?
+            pathnames[ObjectId.to_string(parent.get_id)] = entries.first.get_old_path
           end
         end
       end
-      return nil
-    end
 
+      pathnames ? [commits, pathnames] : commits
+    end
 
     def branch_list
       branch = @jgit.branch_list
