@@ -48,6 +48,7 @@ module RJGit
       jcommits = Array.new
 
       if path && options[:follow]
+        pathnames = {ref.get_name => path} if options[:list_renames]
         current_path = path
         start = nil
         loop do
@@ -56,6 +57,10 @@ module RJGit
             next if jcommits.include?(jcommit)
             jcommits << jcommit
             start = jcommit
+          end
+          if options[:list_renames]
+            id = ObjectId.to_string(start.get_id)
+            pathnames[id] = current_path unless pathnames.has_key?(id)
           end
           current_path = follow_renames(start, current_path) if start
           break if current_path.nil?
@@ -83,7 +88,8 @@ module RJGit
         jcommits = logs.call
       end
 
-      jcommits.map{ |jcommit| Commit.new(jrepo, jcommit) }
+      commits = jcommits.map{ |jcommit| Commit.new(jrepo, jcommit) }
+      pathnames ? [commits, pathnames] : commits
     end
 
     def follow_renames(jcommit, path)
