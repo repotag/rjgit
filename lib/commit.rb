@@ -9,11 +9,12 @@ module RJGit
 
     attr_reader :id, :parents, :actor, :committer, :authored_date, :committed_date
     attr_reader :message, :short_message, :jcommit, :parent_count
+    attr_reader :tracked_pathname # When this commit is part of a log for a single pathname, track the pathname over renames.
     alias_method :get_name, :id
   
     RJGit.delegate_to(RevCommit, :@jcommit)
     
-    def initialize(repository, commit)
+    def initialize(repository, commit, tracked_pathname = nil)
       @jrepo = RJGit.repository_type(repository)
       @jcommit = commit
       @id = ObjectId.to_string(commit.get_id)
@@ -24,6 +25,7 @@ module RJGit
       @message = @jcommit.get_full_message
       @short_message = @jcommit.get_short_message
       @parent_count = @jcommit.get_parent_count
+      @tracked_pathname = tracked_pathname
     end
     
     def tree

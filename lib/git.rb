@@ -99,7 +99,7 @@ module RJGit
         prev_commit = jcommit
       end
 
-      pathnames ? [commits, pathnames] : commits
+      commits
     end
 
     def branch_list
