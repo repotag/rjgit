@@ -86,6 +86,8 @@ module RJGit
         df.set_detect_renames(true)
         prev_commit = nil
         pathname = path
+      else
+        pathname = nil
       end
 
       commits = logs.call.map do |jcommit|
