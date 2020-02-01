@@ -53,7 +53,6 @@ module RJGit
       logs.add(ref)
 
       if path && options[:follow]
-        pathnames = {ref.get_name => path} if options[:list_renames]
         cfg       = Configuration.new(nil)
         cfg.add_setting('renames', true, 'diffs', nil)
         follow    = FollowFilter.create(path, cfg.get(org.eclipse.jgit.diff.DiffConfig::KEY))
@@ -85,18 +84,17 @@ module RJGit
         df.set_context(0)
         df.set_path_filter(follow)
         df.set_detect_renames(true)
+        prev_commit = nil
+        pathname = path
       end
 
-      prev_commit = nil
       commits = logs.call.map do |jcommit|
         if options[:follow] && options[:list_renames]
-          entries = df.scan(prev_commit, jcommit).to_a
-          unless entries.empty?
-            pathnames[ObjectId.to_string(prev_commit.get_id)] = entries.first.get_old_path
-          end
+          entries = df.scan(jcommit, prev_commit).to_a
+          pathname = entries.empty? ? pathname : entries.last.get_old_path
+          prev_commit = jcommit
         end
-        Commit.new(jrepo, jcommit)
-        prev_commit = jcommit
+        Commit.new(jrepo, jcommit, pathname)
       end
 
       commits
