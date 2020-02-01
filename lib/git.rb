@@ -78,22 +78,25 @@ module RJGit
           logs.not(revwalk.parseCommit(jrepo.resolve(ref)))
         end
       end
-      commits = logs.call.map{ |jcommit| Commit.new(jrepo, jcommit) }
 
-      if path && options[:follow] && options[:list_renames]
+      if options[:follow] && options[:list_renames]
         df = DiffFormatter.new(DisabledOutputStream::INSTANCE)
         df.set_repository(jrepo)
         df.set_context(0)
         df.set_path_filter(follow)
         df.set_detect_renames(true)
-        commits.each do |commit|
-          jcommit = commit.jcommit
-          parent  = jcommit.parent_count > 0 ? jcommit.get_parent(0) : nil
-          entries = df.scan(parent, jcommit).to_a
+      end
+
+      prev_commit = nil
+      commits = logs.call.map do |jcommit|
+        if options[:follow] && options[:list_renames]
+          entries = df.scan(prev_commit, jcommit).to_a
           unless entries.empty?
-            pathnames[ObjectId.to_string(parent.get_id)] = entries.first.get_old_path
+            pathnames[ObjectId.to_string(prev_commit.get_id)] = entries.first.get_old_path
           end
         end
+        Commit.new(jrepo, jcommit)
+        prev_commit = jcommit
       end
 
       pathnames ? [commits, pathnames] : commits
