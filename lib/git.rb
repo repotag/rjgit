@@ -88,12 +88,10 @@ module RJGit
         df.set_detect_renames(true)
         prev_commit = nil
         pathname = path
-      else
-        pathname = nil
       end
       
       commits = logs.call.map do |jcommit|
-        if options[:follow] && options[:list_renames]
+        if path && options[:follow] && options[:list_renames]
           entries = df.scan(jcommit, prev_commit).to_a
           pathname = entries.empty? ? pathname : entries.last.get_old_path
           prev_commit = jcommit
