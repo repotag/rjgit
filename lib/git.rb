@@ -55,7 +55,7 @@ module RJGit
       if path && options[:follow]
         cfg       = Configuration.new(nil)
         cfg.add_setting('renames', true, 'diffs', nil)
-        follow    = FollowFilter.create(path, cfg.get(org.eclipse.jgit.diff.DiffConfig::KEY))
+        follow    = FollowFilter.create(path, cfg.jconfig.get(org.eclipse.jgit.diff.DiffConfig::KEY))
         logs.set_rev_filter(TreeRevFilter.new(RevWalk.new(jrepo), follow))
       elsif path
         logs.addPath(path)
