@@ -4,17 +4,16 @@ module RJGit
   import 'org.eclipse.jgit.revwalk.RevCommit'
   import 'org.eclipse.jgit.diff.DiffFormatter'
   import 'org.eclipse.jgit.util.io.DisabledOutputStream'
-
+  
   class Commit
 
     attr_reader :id, :parents, :actor, :committer, :authored_date, :committed_date
     attr_reader :message, :short_message, :jcommit, :parent_count
-    attr_reader :tracked_pathname # When this commit is part of a log for a single pathname, track the pathname over renames.
     alias_method :get_name, :id
   
     RJGit.delegate_to(RevCommit, :@jcommit)
     
-    def initialize(repository, commit, tracked_pathname = nil)
+    def initialize(repository, commit)
       @jrepo = RJGit.repository_type(repository)
       @jcommit = commit
       @id = ObjectId.to_string(commit.get_id)
@@ -25,7 +24,6 @@ module RJGit
       @message = @jcommit.get_full_message
       @short_message = @jcommit.get_short_message
       @parent_count = @jcommit.get_parent_count
-      @tracked_pathname = tracked_pathname
     end
     
     def tree
@@ -129,5 +127,14 @@ module RJGit
       end
     end
   
+  end
+  
+  class TrackingCommit < Commit
+    attr_reader :tracked_pathname # This commit is part of a log for a single pathname. The tracked_pathname attribute tracks the pathname over renames.
+    
+    def initialize(repository, commit, tracked_pathname = nil)
+      super(repository, commit)
+      @tracked_pathname = tracked_pathname
+    end
   end
 end

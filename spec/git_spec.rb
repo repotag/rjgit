@@ -53,7 +53,6 @@ describe RubyGit do
     it "follows renames for specific path" do
       repo = Repo.new(TEST_REPO_PATH)
       commits = repo.git.log("follow-rename.txt", "HEAD", follow: true, list_renames: true)
-      puts commits.inspect
       expect(commits[0].tracked_pathname).to eq 'follow-rename.txt'
       expect(commits[1].tracked_pathname).to eq 'rename-example.txt'
       expect(commits.count).to eq 2

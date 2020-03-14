@@ -89,14 +89,16 @@ module RJGit
       else
         pathname = nil
       end
-
+      
       commits = logs.call.map do |jcommit|
         if options[:follow] && options[:list_renames]
           entries = df.scan(jcommit, prev_commit).to_a
           pathname = entries.empty? ? pathname : entries.last.get_old_path
           prev_commit = jcommit
+          TrackingCommit.new(jrepo, jcommit, pathname)
+        else
+          Commit.new(jrepo, jcommit)
         end
-        Commit.new(jrepo, jcommit, pathname)
       end
 
       commits
