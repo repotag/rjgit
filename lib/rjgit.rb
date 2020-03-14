@@ -1,5 +1,4 @@
 module RJGit
-
   begin
     require 'java'
     Dir["#{File.dirname(__FILE__)}/java/jars/*.jar"].each { |jar| require jar }
@@ -25,6 +24,8 @@ module RJGit
   end
 
   import 'org.eclipse.jgit.lib.ObjectId'
+  
+  class PatchApplyException < StandardError; end
 
   module Porcelain
 
@@ -361,9 +362,7 @@ module RJGit
 
       # Take the result of RJGit::Porcelain.diff with options[:patch] = true and return a patch String
       def self.diffs_to_patch(diffs)
-        result = ""
-        diffs.each {|diff| result << diff[:patch]}
-        result
+        diffs.inject(""){|result, diff| result << diff[:patch]}
       end
 
       def initialize(repository, patch, ref = Constants::HEAD)
@@ -371,7 +370,7 @@ module RJGit
         @ref   = ref
         @patch = Patch.new
         @patch.parse(ByteArrayInputStream.new(patch.to_java_bytes))
-        raise_patch_apply_error unless @patch.getErrors.to_a.empty?
+        raise_patch_apply_error unless @patch.getErrors.isEmpty()
         @current_tree = Commit.find_head(@jrepo, ref).tree
       end
 
@@ -380,7 +379,7 @@ module RJGit
       end
 
       def build_map
-        raise_patch_apply_error if @patch.getFiles.to_a.empty?
+        raise_patch_apply_error if @patch.getFiles.isEmpty()
         @patch.getFiles.each do |file_header|
           case file_header.getChangeType
           when ADD
@@ -401,13 +400,13 @@ module RJGit
       private
 
       def raise_patch_apply_error
-        raise Java::OrgEclipseJgitApiErrors::PatchApplyException.new('Patch failed to apply')
+        raise ::RJGit::PatchApplyException.new('Patch failed to apply')
       end
 
       def getData(path)
         begin
           (@current_tree / path).data
-        rescue
+        rescue NoMethodError
           raise_patch_apply_error
         end
       end

@@ -390,7 +390,7 @@ index 45c2f8a..3291bba 100644
 --- a/org.eclipse.jgit/src/org/spearce/jgit/lib/RepositoryConfig.java
 +++ b/org.eclipse.jgit/src/org/spearce/jgit/lib/RepositoryConfig.java
 EOF
-        expect {RJGit::Plumbing::ApplyPatchToIndex.new(@repo, patch)}.to raise_error Java::OrgEclipseJgitApiErrors::PatchApplyException
+        expect {RJGit::Plumbing::ApplyPatchToIndex.new(@repo, patch)}.to raise_error RJGit::PatchApplyException
       end
 
       it 'throws a PatchApplyException when encountering a malformed hunk' do
@@ -409,7 +409,7 @@ diff --git a/lib/grit.rb b/lib/grit.rb\nindex 77aa887..6afcf64 100644\n--- a/lib
 EOF
         [patch1, patch2].each do |patch|
           applier = RJGit::Plumbing::ApplyPatchToIndex.new(@repo, patch)
-          expect {applier.build_map}.to raise_error Java::OrgEclipseJgitApiErrors::PatchApplyException
+          expect {applier.build_map}.to raise_error RJGit::PatchApplyException
         end
       end
 

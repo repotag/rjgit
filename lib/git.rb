@@ -289,7 +289,11 @@ module RJGit
     end
 
     def apply(input_stream)
-      apply_result = @jgit.apply.set_patch(input_stream).call
+      begin
+        apply_result = @jgit.apply.set_patch(input_stream).call
+      rescue Java::OrgEclipseJgitApiErrors::PatchApplyException
+        RJGit::PatchApplyException
+      end
       updated_files = apply_result.get_updated_files
       updated_files_parsed = []
       updated_files.each do |file|
