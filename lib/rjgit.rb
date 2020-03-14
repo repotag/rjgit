@@ -318,9 +318,7 @@ module RJGit
       end
 
       def commit(message, author, parents = nil, ref = "refs/heads/#{Constants::MASTER}", force = false)
-        @current_tree = @current_tree ? RJGit.tree_type(@current_tree) : @jrepo.resolve("#{ref}^{tree}")
-        @treebuilder.treemap = @treemap
-        new_tree = @treebuilder.build_tree(@current_tree)
+        new_tree = build_new_tree(@treemap, "#{ref}^{tree}")
         return false if @current_tree && new_tree.name == @current_tree.name
 
         parents = parents ? parents : @jrepo.resolve(ref+"^{commit}")
@@ -343,6 +341,13 @@ module RJGit
 
       def self.successful?(result)
         ["NEW", "FAST_FORWARD", "FORCED"].include?(result)
+      end
+      
+      private
+      
+      def build_new_tree(treemap, ref)
+        @treebuilder.treemap = treemap
+        new_tree = @treebuilder.build_tree(@current_tree ? RJGit.tree_type(@current_tree) : @jrepo.resolve(ref))
       end
 
     end
@@ -393,6 +398,14 @@ module RJGit
             add(file_header.getNewPath, getData(file_header.getOldPath))
           end
         end
+        @treemap
+      end
+      
+      # Build the new tree based on the patch, but don't commit it
+      # Return the String object id of the new tree, and an Array of affected paths
+      def new_tree
+        map = build_map
+        return ObjectId.to_string(build_new_tree(map, @ref)), map.keys
       end
 
       private

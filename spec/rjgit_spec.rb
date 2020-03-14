@@ -350,15 +350,15 @@ describe RJGit do
     end
 
     describe RJGit::Plumbing::ApplyPatchToIndex do
-      before(:all) do
+      before(:each) do
         @temp_repo_path = create_temp_repo(TEST_BARE_REPO_PATH, true)
         @repo = Repo.new(@temp_repo_path)
-        @diffs = RJGit::Porcelain.diff(@repo, patch: true, new_rev: @repo.commits[1].id, old_rev: @repo.commits[0].id)
+        @diffs = RJGit::Porcelain.diff(@repo, patch: true, new_rev: @repo.commits[20].id, old_rev: @repo.commits[0].id)
         @msg = 'Message'
         @auth = RJGit::Actor.new('test', 'test@repotag.org')
       end
 
-      after(:all) do
+      after(:each) do
         remove_temp_repo(@temp_repo_path)
         @repo = nil
       end
@@ -366,10 +366,10 @@ describe RJGit do
       it 'converts diff entries to a patch' do
         result = RJGit::Plumbing::ApplyPatchToIndex.diffs_to_patch(@diffs)
         expect(result).to be_a String
-        expect(result.split("\n").first).to eq 'diff --git a/PURE_TODO b/PURE_TODO'
+        expect(result.split("\n").first).to eq 'diff --git a/.gitignore b/.gitignore'
       end
 
-      it 'applies a patch' do
+      it 'applies a patch and commits the result' do
         head_sha = @repo.head.id
         expect(head_sha).to eq 'ca8a30f5a7f0f163bbe3b6f0abf18a6c83b0687a'
         patch = RJGit::Plumbing::ApplyPatchToIndex.diffs_to_patch(@diffs)
@@ -380,7 +380,38 @@ describe RJGit do
         expect(sha).not_to eq head_sha
         expect(@repo.head.id).to eq sha
       end
+      
+      it 'applies a patch and returns the new tree' do
+        patch = RJGit::Plumbing::ApplyPatchToIndex.diffs_to_patch(@diffs)
+        applier = RJGit::Plumbing::ApplyPatchToIndex.new(@repo, patch)
+        id, paths = applier.new_tree
+        expect(id).to be_a String
+        expect(paths).to be_a Array
+      end
+      
+      it 'applies patches for new files and renames' do
+        add = <<EOF
+diff --git a/waa b/waa
+new file mode 100644
+index 0000000..d738716
+--- /dev/null
++++ b/waa
+@@ -0,0 +1 @@
++waa
+EOF
 
+        rename = <<EOF
+diff --git a/PURE_TODO b/foo
+similarity index 100%
+rename from PURE_TODO
+rename to foo
+EOF
+      [add, rename].each do |patch|
+        applier = RJGit::Plumbing::ApplyPatchToIndex.new(@repo, patch)
+        expect(applier.build_map).to be_a Hash
+      end
+    end
+      
       it 'throws a PatchApplyException when using a malformed patch at init' do
         patch = <<EOF
 @@ -109,4 +109,11 @@ assertTrue(Arrays.equals(values.toArray(), repositoryConfig
@@ -405,7 +436,7 @@ index a3648a1..2d44096 100644
  d
 EOF
         patch2 = <<EOF
-diff --git a/lib/grit.rb b/lib/grit.rb\nindex 77aa887..6afcf64 100644\n--- a/lib/grit.rb\n+++ b/lib/grit.rb\n@@ -30000,12 +11,10 @@\n require 'rubygems'\n require 'mime/types'\n require 'open4'\n-require 'digest/sha1'\n \n # internal requires\n require 'grit/lazy'\n require 'grit/errors'\n-require 'grit/git-ruby'\n require 'grit/git'\n require 'grit/head'\n require 'grit/tag'\n@@ -28,7 +26,6 @@\n require 'grit/config'\n require 'grit/repo'\n \n-\n module Grit\n   class << self\n     attr_accessor :debug
+diff --git a/lib/grit.rb b/lib/grit.rb\nindex 77aa887..6afcf64 100644\n--- a/lib/grit.rb\n+++ b/lib/grit.rb\n@@ -30000,12 +11200,10 @@\n require 'rubygems'\n require 'mime/types'\n require 'open4'\n-require 'digest/sha1'\n \n # internal requires\n require 'grit/lazy'\n require 'grit/errors'\n-require 'grit/git-ruby'\n require 'grit/git'\n require 'grit/head'\n require 'grit/tag'\n@@ -28,7 +26,6 @@\n require 'grit/config'\n require 'grit/repo'\n \n-\n module Grit\n   class << self\n     attr_accessor :debug
 EOF
         [patch1, patch2].each do |patch|
           applier = RJGit::Plumbing::ApplyPatchToIndex.new(@repo, patch)
