@@ -25,8 +25,6 @@ module RJGit
 
   import 'org.eclipse.jgit.lib.ObjectId'
   
-  class PatchApplyException < StandardError; end
-
   module Porcelain
 
     import 'org.eclipse.jgit.lib.Constants'

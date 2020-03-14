@@ -15,6 +15,8 @@ module RJGit
   import 'org.eclipse.jgit.api.TransportConfigCallback'
   import 'org.eclipse.jgit.transport.JschConfigSessionFactory'
   import 'org.eclipse.jgit.transport.SshTransport'
+  
+  class PatchApplyException < StandardError; end
 
   class RubyGit
 
@@ -292,7 +294,7 @@ module RJGit
       begin
         apply_result = @jgit.apply.set_patch(input_stream).call
       rescue Java::OrgEclipseJgitApiErrors::PatchApplyException
-        RJGit::PatchApplyException
+        raise RJGit::PatchApplyException
       end
       updated_files = apply_result.get_updated_files
       updated_files_parsed = []
