@@ -260,7 +260,7 @@ describe RubyGit do
 
     it "calls set_credentials_provider for options[:username] == 'something'" do
       remote_with_dir = "/tmp/gitserver.zzz/gituser/gitrepo.git"
-      options = {username: 'something', password: ''}
+      options = {username: 'something'}
       expect(clone_command).to receive(:set_credentials_provider).with(anything).and_return(true)
       expect(clone_command).to_not receive(:set_transport_config_callback)
       ::RJGit::RubyGit.set_command_transport(clone_command, remote_with_dir, options)
