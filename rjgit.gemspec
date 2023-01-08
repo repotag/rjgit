@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.summary           = "JRuby wrapper around the JGit library."
   s.description       = "JRuby wrapper around the JGit library for manipulating git repositories in code."
   s.version           = RJGit::VERSION
-  s.authors           = ["Maarten Engelen", "Bart Kamphorst", "Dawa Ometto", "Arlette van Wissen", "Steven Woudenberg"]
+  s.authors           = ["Bart Kamphorst", "Dawa Ometto"]
   s.email             = "repotag-dev@googlegroups.com"
   s.homepage          = "https://github.com/repotag/rjgit"
   s.require_paths     = ["lib"]

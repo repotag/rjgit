@@ -6,7 +6,7 @@ RJGit
 [![Ruby Build](https://github.com/repotag/rjgit/actions/workflows/test.yaml/badge.svg)](https://github.com/repotag/rjgit/actions/workflows/test.yaml)
 [![Coverage Status](https://coveralls.io/repos/repotag/rjgit/badge.png?branch=master)](https://coveralls.io/r/repotag/rjgit)
 [![Gem Version](https://badge.fury.io/rb/rjgit.png)](http://badge.fury.io/rb/rjgit)
-[![Cutting Edge Dependency Status](https://dometto-cuttingedge.herokuapp.com/github/repotag/rjgit/svg 'Cutting Edge Dependency Status')](https://dometto-cuttingedge.herokuapp.com/github/repotag/rjgit/info)
+[![Cutting Edge Dependency Status](https://cuttingedge.onrender.com/github/repotag/rjgit/svg 'Cutting Edge Dependency Status')](https://cuttingedge.onrender.com/github/repotag/rjgit/info)
 
 Summary
 -------
@@ -189,21 +189,17 @@ jruby --ng -S rake
 Authors
 -------
 
-RJGit is being developed by Team Repotag:
+RJGit is being developed by:
 
-- [Maarten Engelen](https://github.com/maarten)
 - [Bart Kamphorst](https://github.com/bartkamphorst)
 - [Dawa Ometto](https://github.com/dometto)
-- [Arlette van Wissen](https://github.com/arlettevanwissen)
-- [Steven Woudenberg](https://github.com/stevenwoudenberg)
 
-With special thanks to:
-- [Patrick Pepels](https://github.com/bluedread)
+
 
 
 License
 -------
-Copyright (c) 2011 - 2022, Team Repotag
+Copyright (c) 2011 - 2023, Team Repotag
 
 (Modified BSD License)
 
