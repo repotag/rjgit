@@ -55,11 +55,11 @@ describe Tree do
       count = 0
       result = @bare_repo.head.tree.find do |tree_entry|
         count = count+1
-        tree_entry[:name] == '.gitignore'
+        tree_entry[:name] == 'Manifest.txt'
       end
       expect(result).to be_a Blob
-      expect(result.id).to eq 'baaa47163a922b716898936f4ab032db4e08ae8a'
-      expect(count).to eq 1 # .gitignore is first in the tree, so no more than one iteration should have been performed.
+      expect(result.id).to eq '22158f1075113476d332d6f5112cf948f38ae658'
+      expect(count).to eq 3 # 'Manifest.txt' is third in the tree, so no more than three iteration should have been performed
     end
 
     it "finds a particular blobs given a block" do
