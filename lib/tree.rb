@@ -25,10 +25,6 @@ module RJGit
       RJGit::Porcelain.ls_tree(@jrepo, @path, Constants::HEAD, options={:print => true, :io => strio})
       @contents = strio.string
     end
-
-    def count
-      contents_array.size
-    end
           
     def recursive_contents_array(limit = nil)
       if @recursive_contents.nil? || @recursive_contents[:limit] != limit
