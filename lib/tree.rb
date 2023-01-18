@@ -64,7 +64,7 @@ module RJGit
     end
     
     def each(&block)
-      block_given? ? contents_array.each(&block) : contents_array.to_enum
+      contents_array.each(&block)
     end
     
     def blobs

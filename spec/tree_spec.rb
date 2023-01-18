@@ -19,7 +19,7 @@ describe Tree do
     end
     
     it "has an array of contents" do
-      expect(@tree.each.to_a).to be_kind_of Array
+      expect(@tree.to_a).to be_kind_of Array
     end
     
     it "has an array of all contents (recursive)" do
