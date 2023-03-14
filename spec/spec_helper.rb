@@ -12,6 +12,11 @@ require 'rspec/collection_matchers'
 require 'rjgit'
 include RJGit
 
+java_import 'org.eclipse.jgit.util.SystemReader'
+# Make sure JGit ignores the user's git config to prevent errors:
+# For example, when the user has GPG commit signing enabled, JGit will attempt and fail to access GPG keys.
+SystemReader.getInstance().userConfig.clear()
+
 TEST_REPO_NAME = "dot_git"
 TEST_REPO_PATH = File.join(File.dirname(__FILE__), 'fixtures', TEST_REPO_NAME)
 TEST_BARE_REPO_NAME = "dot_bare_git"
