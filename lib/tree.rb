@@ -41,22 +41,17 @@ module RJGit
 
     def find_blob(&block)
       return nil unless block_given?
-      find(:Blob) {|tree_entry| yield tree_entry }
+      _find(:Blob) {|tree_entry| yield tree_entry }
     end
 
     def find_tree(&block)
       return nil unless block_given?
-      find(:Tree) {|tree_entry| yield tree_entry }
+      _find(:Tree) {|tree_entry| yield tree_entry }
     end
 
-    def find(type = nil, &block)
+    def find(&block)
       return nil unless block_given?
-      treewalk = init_walk
-      while treewalk.next
-        entry = tree_entry(treewalk)
-        next if type && type != entry[:type]
-        return wrap_tree_or_blob(entry[:type], entry[:mode], entry[:path], entry[:id]) if yield entry
-      end
+      _find(nil) {|tree_entry| yield tree_entry}
     end
     
     def each(&block)
@@ -122,6 +117,16 @@ module RJGit
 
     def contents_array
       @contents_ary ||= jtree_entries
+    end
+
+    def _find(type = nil, &block)
+      return nil unless block_given?
+      treewalk = init_walk
+      while treewalk.next
+        entry = tree_entry(treewalk)
+        next if type && type != entry[:type]
+        return wrap_tree_or_blob(entry[:type], entry[:mode], entry[:path], entry[:id]) if yield entry
+      end
     end
 
     def init_walk(recurse=false)
