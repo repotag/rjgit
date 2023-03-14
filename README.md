@@ -85,7 +85,9 @@ tree = repo.find("959329025f67539fb82e76b02782322fad032000", :tree) #...or by SH
 tree.data # List the tree's contents (blobs and trees). Also tree.id, tree.mode, etc.
 tree.each {|entry| puts entry.inspect} # Loop over the Tree's children (Blobs and Trees)
 tree.find_blob {|entry| entry[:name] == 'foo.txt'} # Find a single blob that matches the block
-tree.find_tree {|entry| entry[:name] == 'mytree' } # Find a single tree that matches the blob
+tree.find_tree {|entry| entry[:name] == 'mytree' } # Find a single tree that matches the block
+tree.find {|entry| ...} # Find a single entry that matches the block
+tree.find_all {|entry entry[:name].include?('.') } # Find all entries matching the block
 tree.trees # An array of the Tree's child Trees
 tree.blobs # An array of the Tree's child Blobs
 Porcelain::ls_tree(repo, repo.tree("example"), :print => true, :recursive => true, :ref => 'mybranch') # Outputs the Tree's contents to $stdout. Faster for recursive listing than Tree#each. Passing nil as the second argument lists the entire repository. ref defaults to HEAD.
