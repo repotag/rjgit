@@ -62,6 +62,19 @@ describe Tree do
       expect(count).to eq 3 # 'Manifest.txt' is third in the tree, so no more than three iteration should have been performed
     end
 
+    it "finds multiple blobs and trees efficiently" do
+      count = 0
+      result = @bare_repo.head.tree.find_all do |tree_entry|
+        count = count+1
+        tree_entry[:name].include? 'i'
+      end
+      expect(result).to be_a Array
+      expect(result.count).to eq 5
+      expect(result.first).to be_a Blob
+      expect(result.last).to be_a Tree
+      expect(count).to eq 8 # Cycles through the whole tree
+    end
+
     it "finds a particular blobs given a block" do
       expect(@tree.find_blob).to be_nil
       result = @tree.find_blob {|tree_entry| tree_entry[:name] == 'grit.rb'}
