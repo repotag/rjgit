@@ -25,14 +25,6 @@ module RJGit
       RJGit::Porcelain.ls_tree(@jrepo, @path, Constants::HEAD, options={:print => true, :io => strio})
       @contents = strio.string
     end
-    
-    def contents_array
-      @contents_ary ||= jtree_entries
-    end
-
-    def count
-      contents_array.size
-    end
           
     def recursive_contents_array(limit = nil)
       if @recursive_contents.nil? || @recursive_contents[:limit] != limit
@@ -45,6 +37,26 @@ module RJGit
     
     def recursive_count(limit = nil)
       recursive_contents_array(limit).size
+    end
+
+    def find_blob(&block)
+      return nil unless block_given?
+      _find(:Blob) {|tree_entry| yield tree_entry }
+    end
+
+    def find_tree(&block)
+      return nil unless block_given?
+      _find(:Tree) {|tree_entry| yield tree_entry }
+    end
+
+    def find(&block)
+      return nil unless block_given?
+      _find(nil) {|tree_entry| yield tree_entry}
+    end
+
+    def find_all(&block)
+      return nil unless block_given?
+      _find(nil, true) {|tree_entry| yield tree_entry}
     end
     
     def each(&block)
@@ -64,8 +76,12 @@ module RJGit
         self
       else
         treewalk = TreeWalk.forPath(@jrepo, file, @jtree)
-        treewalk.nil? ? nil : 
-          wrap_tree_or_blob(treewalk.get_file_mode(0), treewalk.get_path_string, treewalk.get_object_id(0))
+        if treewalk
+          mode = treewalk.get_file_mode(0)
+          wrap_tree_or_blob(obj_type(mode), mode.get_bits, treewalk.get_path_string, treewalk.get_object_id(0))
+        else
+          nil
+        end
       end
     end
     
@@ -104,22 +120,68 @@ module RJGit
 
     private
 
-    def jtree_entries(options={})
+    def contents_array
+      @contents_ary ||= jtree_entries
+    end
+
+    def _find(type = nil, multiple = false, &block)
+      return nil unless block_given?
+      treewalk = init_walk
+      results = [] if multiple
+
+      while treewalk.next
+        entry = tree_entry(treewalk)
+        next if type && type != entry[:type]
+        if yield entry
+          result = wrap_tree_or_blob(entry[:type], entry[:mode], entry[:name], entry[:id])
+          if multiple
+            results << result
+          else
+            return result
+          end
+        end
+      end
+      return results
+    end
+
+    def init_walk(recurse=false)
       treewalk = TreeWalk.new(@jrepo)
       treewalk.add_tree(@jtree)
-      treewalk.set_recursive(true) if options[:recursive]
+      treewalk.set_recursive(true) if recurse
+      treewalk
+    end
+
+    def tree_entry(treewalk)
+      mode = treewalk.get_file_mode(0)
+      {
+        type: obj_type(mode),
+        mode: mode.get_bits,
+        name: treewalk.get_path_string,
+        id: treewalk.get_object_id(0)
+      }
+    end
+
+    def jtree_entries(options = {})
+      treewalk = init_walk(options[:recursive])
       entries = []
       while treewalk.next
-        entries << wrap_tree_or_blob(treewalk.get_file_mode(0), treewalk.get_path_string, treewalk.get_object_id(0))
+        mode = treewalk.get_file_mode(0)
+        type = obj_type(mode)
+
+        entries << wrap_tree_or_blob(type, mode.get_bits, treewalk.get_path_string, treewalk.get_object_id(0))
+
         break if options[:limit] && entries.size >= options[:limit].to_i
       end
       entries
     end
 
-    def wrap_tree_or_blob(mode, path, id)
-      type = mode.get_object_type == Constants::OBJ_TREE ? RJGit::Tree : RJGit::Blob
+    def wrap_tree_or_blob(type, mode, path, id)
       walk = RevWalk.new(@jrepo)
-      type.new(@jrepo, mode.get_bits, path, walk.parse_any(id)) 
+      RJGit.const_get(type).new(@jrepo, mode, path, walk.parse_any(id)) 
+    end
+
+    def obj_type(mode)
+      mode.get_object_type == Constants::OBJ_BLOB ? :Blob : :Tree
     end
     
   end

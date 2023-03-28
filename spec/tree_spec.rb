@@ -19,7 +19,7 @@ describe Tree do
     end
     
     it "has an array of contents" do
-      expect(@tree.contents_array).to be_kind_of Array
+      expect(@tree.to_a).to be_kind_of Array
     end
     
     it "has an array of all contents (recursive)" do
@@ -49,6 +49,50 @@ describe Tree do
     
     it "has blobs" do
       expect(@tree.blobs).to be_kind_of Array
+    end
+
+    it "finds blobs and trees efficiently" do
+      count = 0
+      result = @bare_repo.head.tree.find do |tree_entry|
+        count = count+1
+        tree_entry[:name] == 'Manifest.txt'
+      end
+      expect(result).to be_a Blob
+      expect(result.id).to eq '22158f1075113476d332d6f5112cf948f38ae658'
+      expect(count).to eq 3 # 'Manifest.txt' is third in the tree, so no more than three iteration should have been performed
+    end
+
+    it "finds multiple blobs and trees efficiently" do
+      count = 0
+      result = @bare_repo.head.tree.find_all do |tree_entry|
+        count = count+1
+        tree_entry[:name].include? 'i'
+      end
+      expect(result).to be_a Array
+      expect(result.count).to eq 5
+      expect(result.first).to be_a Blob
+      expect(result.last).to be_a Tree
+      expect(count).to eq 8 # Cycles through the whole tree
+    end
+
+    it "finds a particular blobs given a block" do
+      expect(@tree.find_blob).to be_nil
+      result = @tree.find_blob {|tree_entry| tree_entry[:name] == 'grit.rb'}
+      expect(result).to be_a Blob
+      expect(result.id).to eq '77aa887449c28a922a660b2bb749e4127f7664e5'
+      # 'grit' is an existing tree, but this method should not match trees
+      no_exist =  @tree.find_blob {|tree_entry| tree_entry[:name] == 'grit'}
+      expect(no_exist).to be_nil
+    end
+
+    it "finds a particular tree given a block" do
+      expect(@tree.find_tree).to be_nil
+      result = @tree.find_tree {|tree_entry| tree_entry[:name] == 'grit'}
+      expect(result).to be_a Tree
+      expect(result.id).to eq '02776a9f673a9cd6e2dfaebdb4a20de867303091'
+      # 'grit.rb' is an existing blob, but this method should not match blobs
+      no_exist =  @tree.find_tree {|tree_entry| tree_entry[:name] == 'grit.rb'}
+      expect(no_exist).to be_nil
     end
     
     it "provides access to its children through the / method" do
