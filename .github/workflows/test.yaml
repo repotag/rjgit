@@ -29,4 +29,4 @@ jobs:
       - name: exec rake
         run: bundle exec rake
       - name: Coveralls
-	uses: coverallsapp/github-action@v2
+        uses: coverallsapp/github-action@v2
