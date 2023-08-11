@@ -28,3 +28,5 @@ jobs:
           bundler-cache: true
       - name: exec rake
         run: bundle exec rake
+      - name: Coveralls
+	uses: coverallsapp/github-action@v2
