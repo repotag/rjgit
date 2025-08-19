@@ -1,0 +1,35 @@
+# -*- encoding: utf-8 -*-
+# stub: psych 5.1.1.1 java lib
+
+Gem::Specification.new do |s|
+  s.name = "psych".freeze
+  s.version = "5.1.1.1"
+  s.platform = "java".freeze
+
+  s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
+  s.metadata = { "msys2_mingw_dependencies" => "libyaml" } if s.respond_to? :metadata=
+  s.require_paths = ["lib".freeze]
+  s.authors = ["Aaron Patterson".freeze, "SHIBATA Hiroshi".freeze, "Charles Oliver Nutter".freeze]
+  s.date = "2023-10-16"
+  s.description = "Psych is a YAML parser and emitter. Psych leverages libyaml[https://pyyaml.org/wiki/LibYAML]\nfor its YAML parsing and emitting capabilities. In addition to wrapping libyaml,\nPsych also knows how to serialize and de-serialize most Ruby objects to and from the YAML format.\n".freeze
+  s.email = ["aaron@tenderlovemaking.com".freeze, "hsbt@ruby-lang.org".freeze, "headius@headius.com".freeze]
+  s.extra_rdoc_files = ["README.md".freeze]
+  s.files = ["CONTRIBUTING.md".freeze, "LICENSE".freeze, "README.md".freeze, "ext/java/org/jruby/ext/psych/PsychEmitter.java".freeze, "ext/java/org/jruby/ext/psych/PsychLibrary.java".freeze, "ext/java/org/jruby/ext/psych/PsychParser.java".freeze, "ext/java/org/jruby/ext/psych/PsychToRuby.java".freeze, "ext/psych/depend".freeze, "ext/psych/extconf.rb".freeze, "ext/psych/psych.c".freeze, "ext/psych/psych.h".freeze, "ext/psych/psych_emitter.c".freeze, "ext/psych/psych_emitter.h".freeze, "ext/psych/psych_parser.c".freeze, "ext/psych/psych_parser.h".freeze, "ext/psych/psych_to_ruby.c".freeze, "ext/psych/psych_to_ruby.h".freeze, "ext/psych/psych_yaml_tree.c".freeze, "ext/psych/psych_yaml_tree.h".freeze, "lib/psych.jar".freeze, "lib/psych.rb".freeze, "lib/psych/class_loader.rb".freeze, "lib/psych/coder.rb".freeze, "lib/psych/core_ext.rb".freeze, "lib/psych/exception.rb".freeze, "lib/psych/handler.rb".freeze, "lib/psych/handlers/document_stream.rb".freeze, "lib/psych/handlers/recorder.rb".freeze, "lib/psych/json/ruby_events.rb".freeze, "lib/psych/json/stream.rb".freeze, "lib/psych/json/tree_builder.rb".freeze, "lib/psych/json/yaml_events.rb".freeze, "lib/psych/nodes.rb".freeze, "lib/psych/nodes/alias.rb".freeze, "lib/psych/nodes/document.rb".freeze, "lib/psych/nodes/mapping.rb".freeze, "lib/psych/nodes/node.rb".freeze, "lib/psych/nodes/scalar.rb".freeze, "lib/psych/nodes/sequence.rb".freeze, "lib/psych/nodes/stream.rb".freeze, "lib/psych/omap.rb".freeze, "lib/psych/parser.rb".freeze, "lib/psych/scalar_scanner.rb".freeze, "lib/psych/set.rb".freeze, "lib/psych/stream.rb".freeze, "lib/psych/streaming.rb".freeze, "lib/psych/syntax_error.rb".freeze, "lib/psych/tree_builder.rb".freeze, "lib/psych/versions.rb".freeze, "lib/psych/visitors.rb".freeze, "lib/psych/visitors/depth_first.rb".freeze, "lib/psych/visitors/emitter.rb".freeze, "lib/psych/visitors/json_tree.rb".freeze, "lib/psych/visitors/to_ruby.rb".freeze, "lib/psych/visitors/visitor.rb".freeze, "lib/psych/visitors/yaml_tree.rb".freeze, "lib/psych/y.rb".freeze, "lib/psych_jars.rb".freeze]
+  s.homepage = "https://github.com/ruby/psych".freeze
+  s.licenses = ["MIT".freeze]
+  s.rdoc_options = ["--main".freeze, "README.md".freeze]
+  s.required_ruby_version = Gem::Requirement.new(">= 2.5.0".freeze)
+  s.requirements = ["jar org.snakeyaml:snakeyaml-engine, 2.7".freeze]
+  s.rubygems_version = "3.3.26".freeze
+  s.summary = "Psych is a YAML parser and emitter".freeze
+
+  if s.respond_to? :specification_version then
+    s.specification_version = 4
+  end
+
+  if s.respond_to? :add_runtime_dependency then
+    s.add_runtime_dependency(%q<jar-dependencies>.freeze, [">= 0.1.7"])
+  else
+    s.add_dependency(%q<jar-dependencies>.freeze, [">= 0.1.7"])
+  end
+end
