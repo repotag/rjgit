@@ -55,13 +55,13 @@ module RJGit
       # Default value for bare
       bare = false
       # If the repo path is new
-      unless File.exists?(epath) 
+      unless File.exist?(epath)
         # take user setting if defined
         bare = !! options[:is_bare] unless options[:is_bare].nil?
       # If the repo path exists
       else
         # scan the directory for a .git directory
-        bare = File.exists?(gitpath) ? false : true
+        bare = File.exist?(gitpath) ? false : true
         # but allow overriding user setting
         bare = !! options[:is_bare] unless options[:is_bare].nil? 
       end

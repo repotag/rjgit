@@ -15,9 +15,9 @@ describe LocalRefWriter do
   it "writes to the specified file path under the repository's path" do
     filename = File.join('info','nonexistent')
     newfile = File.join(@repo.path, filename)
-    expect(File.exists?(newfile)).to be false
+    expect(File.exist?(newfile)).to be false
     @writer.writeFile(filename, "Test".to_java_bytes)
-    expect(File.exists?(newfile)).to be true
+    expect(File.exist?(newfile)).to be true
   end
 
   it "inherits the write_info_refs method from its JGit superclass" do
