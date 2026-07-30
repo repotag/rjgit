@@ -41,7 +41,7 @@ def create_temp_repo(clone_path, bare = false)
 end
 
 def remove_temp_repo(path)
-  if File.exists?(path)
+  if File.exist?(path)
     FileUtils.rm_rf(path)
   else
     puts "\nWARNING: could not delete path (directory #{path} does not exist). Called by #{caller[0]}.\n"

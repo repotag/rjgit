@@ -8,6 +8,6 @@ end
 
 RSpec::Matchers.define :exist do 
   match do |match| 
-    File.exists?(match) 
+    File.exist?(match)
   end
 end

@@ -445,7 +445,7 @@ module RJGit
 
       # Take the result of RJGit::Porcelain.diff with options[:patch] = true and return a patch String
       def self.diffs_to_patch(diffs)
-        diffs.inject(""){|result, diff| result << diff[:patch]}
+        diffs.inject(+""){|result, diff| result << diff[:patch]}
       end
 
       def initialize(repository, patch, ref = Constants::HEAD)
