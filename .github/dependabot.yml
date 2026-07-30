@@ -1,0 +1,21 @@
+version: 2
+updates:
+  # Maintain Ruby gems listed in your .gemspec and Gemfile
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly" # Options: daily, weekly, monthly
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ruby"
+  # Maintain GitHub Actions workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
