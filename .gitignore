@@ -21,3 +21,6 @@ Gemfile.lock
 .yardoc
 _yardoc
 doc/
+
+# JRuby installation (for local testing)
+jruby-*/
